@@ -36,21 +36,21 @@ impl Processor {
         program_id: &Pubkey,
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
-        let initializer = next_account_info(account_info_iter)?;
+        let initializer = next_account_info(account_info_iter)?;  // 0
 
         if !initializer.is_signer {
             return Err(ProgramError::MissingRequiredSignature);
         }
 
-        let temp_token_account = next_account_info(account_info_iter)?;
+        let temp_token_account = next_account_info(account_info_iter)?; // 1
 
-        let token_to_receive_account = next_account_info(account_info_iter)?;
+        let token_to_receive_account = next_account_info(account_info_iter)?;   // 2
         if *token_to_receive_account.owner != spl_token::id() {
             return Err(ProgramError::IncorrectProgramId)
         }
 
-        let escrow_account = next_account_info(account_info_iter)?;
-        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+        let escrow_account = next_account_info(account_info_iter)?;     // 3
+        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;    // 4
 
         if !rent.is_exempt(escrow_account.lamports(), escrow_account.data_len()) {
             return Err(EscrowError::NotRentExempt.into());
@@ -98,17 +98,17 @@ impl Processor {
         program_id: &Pubkey,
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
-        let taker = next_account_info(account_info_iter)?;
+        let taker = next_account_info(account_info_iter)?; // 0
 
         if !taker.is_signer {
             return Err(ProgramError::MissingRequiredSignature);
         }
 
-        let takers_sending_token_account = next_account_info(account_info_iter)?;
+        let takers_sending_token_account = next_account_info(account_info_iter)?;  // 1
 
-        let takers_token_to_receive_account = next_account_info(account_info_iter)?;
+        let takers_token_to_receive_account = next_account_info(account_info_iter)?;  // 2
 
-        let pdas_temp_token_account = next_account_info(account_info_iter)?;
+        let pdas_temp_token_account = next_account_info(account_info_iter)?;  // 3
         let pdas_temp_token_account_info = TokenAccount::unpack(&pdas_temp_token_account.data.borrow())?;
         let (pda, bump_seed) = Pubkey::find_program_address(&[b"escrow"], program_id);
 
@@ -116,9 +116,9 @@ impl Processor {
             return Err(EscrowError::ExpectedAmountMismatch.into());
         }
 
-        let initializers_main_account = next_account_info(account_info_iter)?;
-        let initializers_token_to_receive_account = next_account_info(account_info_iter)?;
-        let escrow_account = next_account_info(account_info_iter)?;
+        let initializers_main_account = next_account_info(account_info_iter)?;  // 4
+        let initializers_token_to_receive_account = next_account_info(account_info_iter)?;  // 5
+        let escrow_account = next_account_info(account_info_iter)?; // 6
 
         let escrow_info = Escrow::unpack(&escrow_account.data.borrow())?;
 
@@ -134,7 +134,7 @@ impl Processor {
             return Err(ProgramError::InvalidAccountData);
         }
 
-        let token_program = next_account_info(account_info_iter)?;
+        let token_program = next_account_info(account_info_iter)?;  // 7
 
         let transfer_to_initializer_ix = spl_token::instruction::transfer(
             token_program.key, 
@@ -155,7 +155,7 @@ impl Processor {
             ],
         )?;
 
-        let pda_account = next_account_info(account_info_iter)?;
+        let pda_account = next_account_info(account_info_iter)?;    // 8
 
         let transfer_to_taker_ix = spl_token::instruction::transfer(
             token_program.key, 
